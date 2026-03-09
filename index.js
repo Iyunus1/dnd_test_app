@@ -1,12 +1,17 @@
-
-// d4, d6, d8, d10, d12, d20, d100
-
-    const ROLL_STATES = {
+// Advantage, Disadvantage, normal d20s
+const ROLL_STATES = {
         NORMAL: 'normal',
         ADVANTAGE: 'advantage',
         DISADVANTAGE: 'disadvantage'
     }
 
+// Bless, Bane, Guidance, Bardic Inspiration
+const SPELL_MODIFIERS = {
+    bless: { diceCount: 1, diceType: 4, sign: 1 },     // Positive 1d4
+    bane:  { diceCount: 1, diceType: 4, sign: -1 },    // Negative 1d4
+    guidance: { diceCount: 1, diceType: 4, sign: 1 },  // Positive 1d4
+    bardic_d6: { diceCount: 1, diceType: 6, sign: 1 }  // Positive 1d6
+};
 
 // Rolls multiple dices as a base dice
 function rollDice(numOfDice, diceType){
@@ -14,7 +19,7 @@ function rollDice(numOfDice, diceType){
     const VALID_DICE = [4, 6, 8, 10, 12, 20, 100]
 
     if(!VALID_DICE.includes(diceType)){
-        throw new console.error(`Invalud dice type: d${diceType}`);
+        throw new Error(`Invalud dice type: d${diceType}`);
     }
 
     let randomRolls = [];
@@ -22,8 +27,7 @@ function rollDice(numOfDice, diceType){
         for(let i = 0; i < numOfDice; i++){
             randomRolls.push(Math.floor(Math.random() * diceType) + 1)
         }
-    }
-    
+}
     
     return {
         rolls: randomRolls,
@@ -59,16 +63,26 @@ function rollD20(rollState = ROLL_STATES.NORMAL){
 }
 
 // Static modifier only adds numbers to the total
-const calculateDiceSum = (d20Result, staticModifier, rollModifier) => {
+const calculateDiceSum = (d20Result, staticModifier, rollModifier = null) => {
+    // modSpellRoll = rollDice(1, 4) e.g bless
+    let modSpellRoll = 0;
 
+    if(rollModifier !== null && SPELL_MODIFIERS[rollModifier.toLowerCase()]){
+        const spellModifyRoll = SPELL_MODIFIERS[rollModifier.toLowerCase()]
+        modSpellRoll = rollDice(spellModifyRoll.diceCount, spellModifyRoll.diceType).total * spellModifyRoll.sign;
+    }
 
-    console.log(d20Result, staticModifier, rollModifier)
-    return d20Result + staticModifier + rollModifier
+    return{
+        D20Roll: d20Result.kept,
+        StaticMod: staticModifier,
+        bonusRoll: modSpellRoll,
+        total: d20Result.kept + staticModifier + modSpellRoll
+    }  
 }
 
-const result = rollDice(5, 8, 0);
+const result = rollDice(5, 8);
 const testAdvantage = rollD20(ROLL_STATES.ADVANTAGE);
-const total = calculateDiceSum(rollD20(ROLL_STATES.NORMAL).kept, 5, rollDice(1, 4).total) // No Advantage, strength +3, 1d4 bless dice
+const total = calculateDiceSum(rollD20(ROLL_STATES.NORMAL), 5, "bless") // No Advantage, strength +3, 1d4 bless dice
 
 console.log(total)
 console.log(result)
