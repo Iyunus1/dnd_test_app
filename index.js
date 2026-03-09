@@ -27,8 +27,8 @@ function rollDice(numOfDice, diceType){
         for(let i = 0; i < numOfDice; i++){
             randomRolls.push(Math.floor(Math.random() * diceType) + 1)
         }
-}
-    
+    }
+
     return {
         rolls: randomRolls,
         total: randomRolls.reduce((accum, currentVal) => accum + currentVal, 0),
@@ -56,9 +56,14 @@ function rollD20(rollState = ROLL_STATES.NORMAL){
         keptRoll = diceRoll.rolls[0]
     }
     
+    let isCrit = keptRoll === 20;
+    let isMiss = keptRoll === 1;
+
     return{
         kept: keptRoll,
-        discarded: discardedRoll
+        discarded: discardedRoll,
+        isCrit: isCrit,
+        isMiss: isMiss
     }
 }
 
@@ -76,6 +81,8 @@ const calculateDiceSum = (d20Result, staticModifier, rollModifier = null) => {
         D20Roll: d20Result.kept,
         StaticMod: staticModifier,
         bonusRoll: modSpellRoll,
+        isCriticalHit: d20Result.isCrit,
+        isCriticalMiss: d20Result.isMiss,
         total: d20Result.kept + staticModifier + modSpellRoll
     }  
 }
@@ -86,6 +93,7 @@ const total = calculateDiceSum(rollD20(ROLL_STATES.NORMAL), 5, "bless") // No Ad
 
 console.log(total)
 console.log(result)
+console.log(testAdvantage)
 
 // Output
 // Player rolled 2d6
