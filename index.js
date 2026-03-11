@@ -87,6 +87,35 @@ const calculateDiceSum = (d20Result, staticModifier, rollModifier = null) => {
     }  
 }
 
+// Dumb function that takes an extraAttack parameter, put in an object as a paramter with dice count and dice type e.g 2d6
+// Need to get the extra attack 1d6 into the return object and its total
+// Need to get the name of the extra attack with it returned e.g sneak attack
+// Return the complete damage total with optional bless, sneakAttack or critical.
+function calculateDamage(diceCount, diceType, staticMod, isCrit = false, extraAttack = null){
+    let extraAttackNum = 0;
+    let diceNum = isCrit ? diceCount * 2 : diceCount;
+    const damageDiceRoll = rollDice(diceNum, diceType);
+    const damageTotal = damageDiceRoll.total + staticMod;
+
+    if(extraAttack !== null){
+        let extraAttackCount = extraAttack.diceCount;
+        let extraAttackType = extraAttack.diceType;
+        if(isCrit){
+            extraAttackCount * 2
+        }else{
+            extraAttackNum = rollDice(extraAttackCount, extraAttackType).total;
+        }
+    }
+
+    return{
+        extraAttackRoll: `${extraAttack}: ${extraAttack.diceCount}d${extraAttack.diceType} = ${extraAttackNum}`,
+        damageRoll: damageDiceRoll,
+        statModifier: staticMod,
+        isCrit: isCrit,
+        damageTotal: damageTotal + extraAttackNum
+    }
+}
+
 const result = rollDice(5, 8);
 const testAdvantage = rollD20(ROLL_STATES.ADVANTAGE);
 const total = calculateDiceSum(rollD20(ROLL_STATES.NORMAL), 5, "bless") // No Advantage, strength +3, 1d4 bless dice
