@@ -19,7 +19,7 @@ function rollDice(numOfDice, diceType){
     const VALID_DICE = [4, 6, 8, 10, 12, 20, 100]
 
     if(!VALID_DICE.includes(diceType)){
-        throw new Error(`Invalud dice type: d${diceType}`);
+        throw new Error(`Invalid dice type: d${diceType}`);
     }
 
     let randomRolls = [];
@@ -93,23 +93,19 @@ const calculateDiceSum = (d20Result, staticModifier, rollModifier = null) => {
 // Return the complete damage total with optional bless, sneakAttack or critical.
 function calculateDamage(diceCount, diceType, staticMod, isCrit = false, extraAttack = null){
     let extraAttackNum = 0;
+    let extraAttackCount = 0;
     let diceNum = isCrit ? diceCount * 2 : diceCount;
     const damageDiceRoll = rollDice(diceNum, diceType);
     const damageTotal = damageDiceRoll.total + staticMod;
 
     if(extraAttack !== null){
-        let extraAttackCount = extraAttack.diceCount;
-        let extraAttackType = extraAttack.diceType;
-        if(isCrit){
-            extraAttackCount * 2
-        }else{
-            extraAttackNum = rollDice(extraAttackCount, extraAttackType).total;
-        }
+        extraAttackCount = isCrit ? extraAttack.diceCount * 2 : extraAttack.diceCount;
+        extraAttackNum = rollDice(extraAttackCount, extraAttack.diceType).total;
     }
 
     return{
-        extraAttackRoll: `${extraAttack}: ${extraAttack.diceCount}d${extraAttack.diceType} = ${extraAttackNum}`,
-        damageRoll: damageDiceRoll,
+        extraAttackRoll: extraAttack ? `${extraAttack.name}: ${extraAttackCount}d${extraAttack.diceType} = ${extraAttackNum}` : null,
+        damageRoll: damageDiceRoll.total,
         statModifier: staticMod,
         isCrit: isCrit,
         damageTotal: damageTotal + extraAttackNum
@@ -119,11 +115,9 @@ function calculateDamage(diceCount, diceType, staticMod, isCrit = false, extraAt
 const result = rollDice(5, 8);
 const testAdvantage = rollD20(ROLL_STATES.ADVANTAGE);
 const total = calculateDiceSum(rollD20(ROLL_STATES.NORMAL), 5, "bless") // No Advantage, strength +3, 1d4 bless dice
+const attackDamage = calculateDamage(1, 12, 4, true,{name: "Sneak Attack" , diceCount:2, diceType: 8 })
 
-console.log(total)
-console.log(result)
-console.log(testAdvantage)
-
+console.log(attackDamage)
 // Output
 // Player rolled 2d6
 // Roll 1: X
